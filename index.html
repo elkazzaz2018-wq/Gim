@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي الذكاء والسرعة الفائقة - مكتب القزاز للبرمجيات</title>
+    
+    <!-- Bootstrap 5 RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-gold: #f59e0b;
+            --btn-num: #334155;
+            --btn-num-hover: #475569;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 60%, #020617 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            margin: 0;
+            user-select: none;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            padding: 25px;
+            position: relative;
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .dashboard {
+            background: #090d16;
+            padding: 12px 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .grid-node {
+            background: var(--btn-num);
+            border-radius: 16px;
+            height: 80px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            position: relative;
+        }
+
+        .grid-node:active {
+            transform: scale(0.92);
+        }
+
+        .grid-node.target {
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%) !important;
+            box-shadow: 0 0 20px #38bdf8;
+            animation: pulse 0.3s infinite alternate;
+        }
+
+        .grid-node.gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            box-shadow: 0 0 20px #f59e0b;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(0.96); }
+            to { transform: scale(1.02); }
+        }
+
+        .progress-bar-wrap {
+            height: 8px;
+            background: #090d16;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+
+        .footer-brand {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .combo-badge {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-weight: bold;
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-card">
+        <span id="comboBadge" class="combo-badge">COMBO x2!</span>
+        <h1 class="brand-title">
+            <i class="fa-solid fa-bolt text-warning"></i>
+            تحدي الرد السريع والذكاء
+        </h1>
+
+        <div class="dashboard">
+            <div class="stat-box">
+                <div class="stat-title">النقاط</div>
+                <div id="scoreDisplay" class="stat-value">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">المستوى</div>
+                <div id="levelDisplay" class="stat-value">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">أعلى رقم</div>
+                <div id="highScoreDisplay" class="stat-value text-warning">0</div>
+            </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+            <div id="timeBar" class="progress-bar-fill"></div>
+        </div>
+
+        <div id="gridBoard" class="grid-container">
+            <!-- 16 خلية تفاعلية -->
+            <script>
+                for(let i = 0; i < 16; i++) {
+                    document.write(`<button class="grid-node" id="node-${i}" onclick="nodeClicked(${i})"></button>`);
+                }
+            </script>
+        </div>
+
+        <button id="startBtn" class="btn btn-primary w-100 py-2 fw-bold" onclick="startGame()">
+            <i class="fa-solid fa-play me-1"></i> ابدأ التحدي الآن
+        </button>
+    </div>
+
+    <div class="footer-brand">
+        تصميم وتطوير: <b>مكتب القزاز للبرمجيات</b> © 2026
+    </div>
+
+    <script>
+        let score = 0;
+        let level = 1;
+        let highScore = localStorage.getItem('elkazaz_high_score') || 0;
+        let activeNode = -1;
+        let isGold = false;
+        let isPlaying = false;
+        let timer = null;
+        let timeLeft = 100;
+        let combo = 0;
+        let speed = 1000;
+
+        document.getElementById('highScoreDisplay').innerText = highScore;
+
+        function startGame() {
+            score = 0;
+            level = 1;
+            combo = 0;
+            speed = 900;
+            isPlaying = true;
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('levelDisplay').innerText = level;
+            document.getElementById('startBtn').style.display = 'none';
+
+            nextTurn();
+        }
+
+        function nextTurn() {
+            if (!isPlaying) return;
+
+            // إعادة ضبط العقد
+            clearNodes();
+
+            // اختيار عقدة عشوائية
+            activeNode = Math.floor(Math.random() * 16);
+            isGold = Math.random() < 0.2; // 20% فرصة لظهور زر ذهبي يعطي نقاط مضاعفة
+
+            const targetBtn = document.getElementById(`node-${activeNode}`);
+            if (isGold) {
+                targetBtn.classList.add('gold');
+                targetBtn.innerHTML = '<i class="fa-solid fa-star"></i>';
+            } else {
+                targetBtn.classList.add('target');
+                targetBtn.innerHTML = '<i class="fa-solid fa-bullseye"></i>';
+            }
+
+            // العداد الزمني للفتة
+            timeLeft = 100;
+            clearInterval(timer);
+            const timeStep = 10;
+            const decrement = (100 / (speed / timeStep));
+
+            timer = setInterval(() => {
+                timeLeft -= decrement;
+                document.getElementById('timeBar').style.width = `${Math.max(0, timeLeft)}%`;
+
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, timeStep);
+        }
+
+        function nodeClicked(index) {
+            if (!isPlaying) return;
+
+            if (index === activeNode) {
+                // ضغطة صحيحة
+                combo++;
+                let points = isGold ? 30 : 10;
+                if (combo > 3) {
+                    points *= 2;
+                    showComboUI();
+                }
+                score += points;
+
+                // زيادات المستويات والسرعة
+                level = Math.floor(score / 100) + 1;
+                speed = Math.max(350, 900 - (level * 50));
+
+                document.getElementById('scoreDisplay').innerText = score;
+                document.getElementById('levelDisplay').innerText = level;
+
+                nextTurn();
+            } else {
+                // ضغطة خاطئة
+                gameOver();
+            }
+        }
+
+        function clearNodes() {
+            for (let i = 0; i < 16; i++) {
+                const btn = document.getElementById(`node-${i}`);
+                btn.className = 'grid-node';
+                btn.innerHTML = '';
+            }
+        }
+
+        function showComboUI() {
+            const badge = document.getElementById('comboBadge');
+            badge.innerText = `COMBO x2! (${combo})`;
+            badge.style.display = 'block';
+            setTimeout(() => badge.style.display = 'none', 800);
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            clearInterval(timer);
+            clearNodes();
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('elkazaz_high_score', highScore);
+                document.getElementById('highScoreDisplay').innerText = highScore;
+                alert(`🔥 رقم قياسي جديد! مجموع نقاطك: ${score}`);
+            } else {
+                alert(`انتهت اللعبة! مجموع نقاطك: ${score}`);
+            }
+
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('startBtn').innerText = 'إعادة التحدي';
+            document.getElementById('timeBar').style.width = '100%';
+        }
+    </script>
+</body>
+</html>
